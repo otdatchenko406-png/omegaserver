@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OmegaServer | Minecraft 1.21.10</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #00ff88;
+  --cyan: #00f5ff;
+  --purple: #9d4edd;
+  --discord: #5865f2;
+  --twitch: #9146ff;
+  --youtube: #ff0000;
+  --dark: #050a0e;
+  --dark2: #0a1628;
+  --text: #c8d8e8;
+  --glow: 0 0 20px rgba(0,255,136,0.5);
+  --glow2: 0 0 20px rgba(0,245,255,0.5);
+  --glow-p: 0 0 20px rgba(157,78,221,0.5);
+  --hh: 60px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 20% 50%,rgba(0,255,136,.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 50%,rgba(0,245,255,.04) 0%,transparent 60%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,255,136,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+.scanline{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,rgba(0,0,0,.025) 0px,rgba(0,0,0,.025) 1px,transparent 1px,transparent 2px);pointer-events:none;z-index:50}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--hh);padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,255,136,.15);background:rgba(5,10,14,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.logo{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:900;color:var(--green);text-shadow:var(--glow);letter-spacing:3px;text-decoration:none;flex-shrink:0}
+.logo span{color:var(--cyan)}
+.nav-desktop{display:flex;align-items:center;gap:2px}
+.nav-desktop a{color:var(--text);text-decoration:none;padding:6px 11px;font-size:12px;font-weight:600;letter-spacing:1.5px;transition:all .3s;text-transform:uppercase;border-radius:4px}
+.nav-desktop a:hover{color:var(--green);background:rgba(0,255,136,.06)}
+.nav-discord{color:var(--discord)!important;border:1px solid rgba(88,101,242,.35)}
+.nav-discord:hover{background:rgba(88,101,242,.1)!important;color:#fff!important}
+
+/* BURGER */
+.burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;cursor:pointer;background:none;border:1px solid rgba(0,255,136,.15);border-radius:8px;padding:8px}
+.burger span{display:block;width:100%;height:2px;background:var(--green);border-radius:2px;transition:all .3s;transform-origin:center}
+.burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* MOBILE NAV */
+.nav-mobile{position:fixed;top:var(--hh);left:0;right:0;background:rgba(5,10,14,.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,255,136,.15);z-index:199;flex-direction:column;padding:10px 14px 18px;gap:4px;pointer-events:none;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s;display:flex}
+.nav-mobile.open{pointer-events:all;opacity:1;transform:translateY(0)}
+.nav-mobile a{color:var(--text);text-decoration:none;padding:13px 16px;font-size:15px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border-radius:10px;transition:all .2s;border:1px solid transparent;display:flex;align-items:center;gap:10px}
+.nav-mobile a:active{color:var(--green);background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.12)}
+.nav-mobile .nm-discord{color:var(--discord)!important;border-color:rgba(88,101,242,.3)!important;background:rgba(88,101,242,.05);margin-top:8px}
+
+/* HERO */
+.hero{position:relative;z-index:5;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(var(--hh) + 36px) 20px 50px}
+.server-status{display:inline-flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:26px;padding:9px 14px 9px 18px;border-radius:50px;border:1px solid rgba(0,255,136,.3);background:rgba(0,255,136,.05);opacity:0;animation:fadeUp .8s ease forwards .3s;max-width:94vw}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;box-shadow:var(--glow);flex-shrink:0}
+.status-dot.offline{background:#ff4444!important;box-shadow:0 0 10px rgba(255,68,68,.5)!important;animation:none}
+.status-dot.loading{background:#ffaa00;box-shadow:0 0 10px rgba(255,170,0,.5)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+#statusText{color:var(--green);transition:color .5s}
+#statusText.offline{color:#ff4444!important}
+#statusText.loading,#statusText.error{color:#ffaa00}
+.refresh-btn{background:none;border:none;cursor:pointer;color:rgba(200,216,232,.4);font-size:15px;padding:4px 5px;border-radius:6px;transition:all .3s;display:flex;align-items:center;margin-left:2px;flex-shrink:0;min-width:30px;min-height:30px;justify-content:center}
+.refresh-btn:active{color:var(--green)}
+.refresh-btn.spinning{animation:spin .7s linear;color:var(--green)}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+.hero h1{font-family:'Orbitron',sans-serif;font-size:clamp(54px,18vw,110px);font-weight:900;line-height:.88;margin-bottom:14px;opacity:0;animation:fadeUp .8s ease forwards .5s}
+.hero h1 .line1{display:block;color:#fff;text-shadow:0 0 60px rgba(255,255,255,.2)}
+.hero h1 .line2{display:block;color:var(--green);text-shadow:0 0 40px rgba(0,255,136,.6)}
+.hero-sub{font-size:clamp(14px,4vw,17px);color:rgba(200,216,232,.65);opacity:0;animation:fadeUp .8s ease forwards .7s;margin:14px 0 30px;letter-spacing:1px;line-height:1.55;padding:0 8px}
+
+/* IP */
+.ip-wrapper{display:flex;gap:12px;margin-bottom:28px;flex-direction:column;align-items:stretch;width:100%;max-width:440px;opacity:0;animation:fadeUp .8s ease forwards .9s}
+.ip-card{background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.25);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;-webkit-user-select:none;user-select:none}
+.ip-card:active{transform:scale(.97);background:rgba(0,255,136,.1)}
+.ip-card.bedrock{border-color:rgba(0,245,255,.25);background:rgba(0,245,255,.04)}
+.ip-card.bedrock:active{background:rgba(0,245,255,.1)}
+.ip-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,136,.08),transparent);animation:shimmer 3s infinite;pointer-events:none}
+.ip-card.bedrock::before{background:linear-gradient(90deg,transparent,rgba(0,245,255,.08),transparent)}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+.ip-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ip-type{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;text-transform:uppercase}
+.ip-card.bedrock .ip-type{color:var(--cyan)}
+.ip-copy-icon{font-size:15px;opacity:.35;transition:opacity .3s}
+.ip-value{font-family:'Share Tech Mono',monospace;font-size:clamp(12px,3.8vw,16px);color:#fff;letter-spacing:.5px;word-break:break-all;transition:all .35s ease}
+.ip-value.copied{color:var(--green)}
+.ip-copy-hint{font-size:11px;color:rgba(200,216,232,.28);margin-top:6px;letter-spacing:1px}
+
+/* BUTTONS */
+.buttons{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp .8s ease forwards 1.1s;width:100%;max-width:440px}
+.btn{flex:1;min-width:120px;padding:14px 16px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:10px;transition:all .25s;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none}
+.btn:active{transform:scale(.96)}
+.btn-discord{background:var(--discord);color:#fff;box-shadow:0 0 25px rgba(88,101,242,.4)}
+.btn-twitch{background:var(--twitch);color:#fff;box-shadow:0 0 25px rgba(145,70,255,.3)}
+.btn-youtube{background:var(--youtube);color:#fff;box-shadow:0 0 25px rgba(255,0,0,.3)}
+.btn-outline{background:transparent;color:var(--cyan);border:1px solid var(--cyan);min-width:100%}
+
+/* STATS */
+.stats{position:relative;z-index:5;padding:36px 14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:1100px;margin:0 auto}
+.stat-card{background:rgba(10,22,40,.8);border:1px solid rgba(0,255,136,.12);border-radius:14px;padding:22px 14px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);transform:scaleX(0);transition:transform .3s}
+.stat-icon{font-size:26px;margin-bottom:8px}
+.stat-value{font-family:'Orbitron',sans-serif;font-size:clamp(18px,5vw,26px);font-weight:700;color:var(--green);text-shadow:var(--glow)}
+.stat-label{font-size:11px;color:rgba(200,216,232,.45);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.stat-online-wrap{position:relative;width:100%}
+.players-tooltip{display:none;position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%);min-width:170px;max-width:min(250px,88vw);background:rgba(5,10,14,.98);border:1px solid rgba(0,255,136,.3);border-radius:12px;padding:13px 15px;z-index:300;box-shadow:0 8px 40px rgba(0,255,136,.2);backdrop-filter:blur(12px);text-align:left}
+.players-tooltip::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);width:11px;height:11px;background:rgba(5,10,14,.98);border-left:1px solid rgba(0,255,136,.3);border-top:1px solid rgba(0,255,136,.3)}
+.stat-card.tooltip-open .players-tooltip{display:block;animation:fadeUp .2s ease}
+.tooltip-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(0,255,136,.12)}
+.player-item{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#fff;padding:3px 0}
+.player-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.tooltip-empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(200,216,232,.35)}
+
+/* SECTION */
+.sec{position:relative;z-index:5;padding:52px 16px;max-width:1200px;margin:0 auto}
+.sec.narrow{max-width:860px}
+.section-title{font-family:'Orbitron',sans-serif;font-size:clamp(17px,5vw,24px);font-weight:700;color:#fff;text-align:center;margin-bottom:8px;letter-spacing:4px}
+.section-line{width:50px;height:2px;background:var(--green);margin:0 auto 38px;box-shadow:var(--glow)}
+.section-line.cyan{background:var(--cyan);box-shadow:var(--glow2)}
+.section-line.purple{background:var(--purple);box-shadow:var(--glow-p)}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.feature-card{background:rgba(10,22,40,.6);border:1px solid rgba(0,245,255,.12);border-radius:14px;padding:22px 18px;transition:all .3s}
+.feature-icon{font-size:28px;margin-bottom:10px}
+.feature-title{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--cyan);margin-bottom:7px;letter-spacing:2px}
+.feature-desc{font-size:14px;color:rgba(200,216,232,.65);line-height:1.6}
+
+/* HOW TO */
+.steps{display:flex;flex-direction:column;gap:11px}
+.step{display:flex;align-items:flex-start;gap:14px;background:rgba(10,22,40,.6);border:1px solid rgba(0,255,136,.08);border-radius:14px;padding:18px;transition:all .3s}
+.step-num{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--green);text-shadow:var(--glow);min-width:32px}
+.step-content h3{font-size:16px;color:#fff;margin-bottom:5px}
+.step-content p{font-size:14px;color:rgba(200,216,232,.65);line-height:1.55}
+.step-content code{font-family:'Share Tech Mono',monospace;background:rgba(0,255,136,.1);color:var(--green);padding:2px 7px;border-radius:3px;font-size:12px;word-break:break-all}
+
+/* CHANGELOG */
+.cl-terminal{background:rgba(5,10,14,.9);border:1px solid rgba(0,255,136,.18);border-radius:14px;overflow:hidden;box-shadow:0 0 60px rgba(0,255,136,.05)}
+.cl-term-head{display:flex;align-items:center;gap:7px;padding:11px 15px;background:rgba(0,255,136,.04);border-bottom:1px solid rgba(0,255,136,.12)}
+.td{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.td.r{background:#ff5f57}.td.y{background:#febc2e}.td.g{background:#28c840}
+.cl-title-bar{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(200,216,232,.3);letter-spacing:2px;margin-left:4px}
+.cl-body{padding:18px 18px 14px}
+.cl-entry{display:flex;gap:0;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(0,255,136,.07);opacity:0;transform:translateX(-10px);transition:opacity .5s ease,transform .5s ease}
+.cl-entry.visible{opacity:1;transform:translateX(0)}
+.cl-entry:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cl-line{width:2px;background:rgba(0,255,136,.18);margin-right:16px;flex-shrink:0;border-radius:2px;position:relative}
+.cl-line::before{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:var(--glow)}
+.cl-date{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);letter-spacing:1.5px;margin-bottom:5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cl-tag{border-radius:3px;padding:1px 7px;font-size:9px;letter-spacing:2px;border:1px solid;display:inline-block}
+.cl-tag.launch{background:rgba(157,78,221,.15);border-color:rgba(157,78,221,.3);color:var(--purple)}
+.cl-tag.update{background:rgba(0,245,255,.1);border-color:rgba(0,245,255,.2);color:var(--cyan)}
+.cl-tag.fix{background:rgba(255,170,0,.1);border-color:rgba(255,170,0,.25);color:#ffaa00}
+.cl-h{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.cl-desc{font-size:13px;color:rgba(200,216,232,.5);line-height:1.55}
+.cl-list{list-style:none;margin-top:7px}
+.cl-list li{font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(200,216,232,.4);padding:2px 0 2px 15px;position:relative}
+.cl-list li::before{content:'›';position:absolute;left:0;color:var(--green)}
+.cl-cursor{font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--green);margin-top:12px;display:block;animation:blink 1.2s steps(1) infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* TOP PLAYERS */
+.leaderboard{display:flex;flex-direction:column;gap:10px}
+.lb-entry{display:flex;align-items:center;gap:12px;background:rgba(10,22,40,.7);border:1px solid rgba(0,255,136,.08);border-radius:14px;padding:13px 16px;transition:all .3s;position:relative;overflow:hidden}
+.lb-entry::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:var(--green);transform:scaleY(0);transition:transform .3s;transform-origin:bottom}
+.lb-entry.rank-1{border-color:rgba(255,215,0,.2)}.lb-entry.rank-1::before{background:#ffd700}
+.lb-entry.rank-2{border-color:rgba(192,192,192,.2)}.lb-entry.rank-2::before{background:#c0c0c0}
+.lb-entry.rank-3{border-color:rgba(205,127,50,.2)}.lb-entry.rank-3::before{background:#cd7f32}
+.lb-rank{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;min-width:28px;text-align:center;flex-shrink:0}
+.lb-entry.rank-1 .lb-rank{color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,.5)}
+.lb-entry.rank-2 .lb-rank{color:#c0c0c0}
+.lb-entry.rank-3 .lb-rank{color:#cd7f32}
+.lb-rank.other{color:rgba(200,216,232,.25);font-size:13px}
+.lb-avatar{width:38px;height:38px;border-radius:8px;background:rgba(0,255,136,.08);overflow:hidden;flex-shrink:0;border:1px solid rgba(0,255,136,.15)}
+.lb-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-family:'Share Tech Mono',monospace;font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-seen{font-size:11px;color:rgba(200,216,232,.28);margin-top:2px}
+.lb-bar-bg{width:100%;height:3px;background:rgba(0,255,136,.08);border-radius:2px;margin-top:7px;overflow:hidden}
+.lb-bar{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:2px;transition:width 1s ease}
+.lb-score{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0}
+.lb-score-lbl{font-size:9px;color:rgba(200,216,232,.28);letter-spacing:1px;text-transform:uppercase}
+.lb-note{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(200,216,232,.18);text-align:center;margin-top:16px;letter-spacing:1.5px}
+
+/* SOCIAL */
+.social-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.social-card{border-radius:16px;padding:30px 22px;text-align:center;transition:all .3s;position:relative;overflow:hidden;text-decoration:none;display:block}
+.social-card:active{transform:scale(.97)}
+.social-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s}
+.social-card.dc{background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.3)}
+.social-card.dc::before{background:rgba(88,101,242,.06)}
+.social-card.tw{background:rgba(145,70,255,.08);border:1px solid rgba(145,70,255,.3)}
+.social-card.tw::before{background:rgba(145,70,255,.06)}
+.social-card.yt{background:rgba(255,0,0,.06);border:1px solid rgba(255,0,0,.2)}
+.social-card.yt::before{background:rgba(255,0,0,.04)}
+.social-icon{font-size:42px;margin-bottom:12px;display:block;position:relative;z-index:1}
+.social-name{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:7px;letter-spacing:3px;position:relative;z-index:1}
+.social-desc{font-size:13px;color:rgba(200,216,232,.55);margin-bottom:16px;line-height:1.5;position:relative;z-index:1}
+.social-btn{display:inline-block;padding:10px 22px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;position:relative;z-index:1}
+.dc .social-btn{background:var(--discord);color:#fff}
+.tw .social-btn{background:var(--twitch);color:#fff}
+.yt .social-btn{background:var(--youtube);color:#fff}
+
+/* FOOTER */
+footer{position:relative;z-index:5;padding:22px 20px;border-top:1px solid rgba(0,255,136,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-logo{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--green);text-shadow:var(--glow)}
+.footer-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(200,216,232,.22);letter-spacing:1.5px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:var(--dark);padding:11px 22px;border-radius:50px;font-weight:700;font-size:13px;letter-spacing:2px;opacity:0;transition:all .35s;z-index:1000;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,255,136,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:rgba(0,255,136,.35);border-radius:2px}
+
+/* HOVER (desktop only) */
+@media(hover:hover){
+  .ip-card:hover{border-color:rgba(0,255,136,.6);background:rgba(0,255,136,.08);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,136,.15)}
+  .ip-card.bedrock:hover{border-color:rgba(0,245,255,.6);background:rgba(0,245,255,.08);box-shadow:0 8px 30px rgba(0,245,255,.15)}
+  .ip-card:hover .ip-copy-icon{opacity:.8}
+  .btn:hover{transform:translateY(-2px)}
+  .stat-card:hover::after{transform:scaleX(1)}
+  .stat-card:hover{border-color:rgba(0,255,136,.3);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,255,136,.08)}
+  .stat-card:hover .players-tooltip{display:block;animation:fadeUp .2s ease}
+  .feature-card:hover{border-color:rgba(0,245,255,.35);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,245,255,.08)}
+  .step:hover{border-color:rgba(0,255,136,.25);transform:translateX(5px)}
+  .lb-entry:hover::before{transform:scaleY(1)}
+  .lb-entry:hover{border-color:rgba(0,255,136,.25);transform:translateX(3px);box-shadow:0 6px 24px rgba(0,255,136,.07)}
+  .social-card:hover{transform:translateY(-5px)}
+  .social-card:hover::before{opacity:1}
+  .social-card.dc:hover{box-shadow:0 15px 40px rgba(88,101,242,.2);border-color:rgba(88,101,242,.6)}
+  .social-card.tw:hover{box-shadow:0 15px 40px rgba(145,70,255,.2);border-color:rgba(145,70,255,.6)}
+  .social-card.yt:hover{box-shadow:0 15px 40px rgba(255,0,0,.15);border-color:rgba(255,0,0,.4)}
+  .social-card:hover .social-btn{filter:brightness(1.2)}
+  .refresh-btn:hover{color:var(--green)}
+}
+
+/* DESKTOP */
+@media(min-width:769px){
+  header{padding:0 28px}
+  .burger{display:none!important}
+  .nav-desktop{display:flex}
+  .ip-wrapper{flex-direction:row;max-width:700px}
+  .ip-card{flex:1}
+  .buttons{flex-direction:row;max-width:700px}
+  .btn-outline{min-width:auto}
+  .stats{grid-template-columns:repeat(4,1fr);padding:48px 40px;gap:16px}
+  .sec{padding:60px 40px}
+  footer{padding:26px 40px}
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .burger{display:flex}
+  .nav-desktop{display:none}
+  footer{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div class="toast" id="toast"></div>
+
+<header>
+  <a class="logo" href="#">OMEGA<span>SERVER</span></a>
+  <nav class="nav-desktop">
+    <a href="#features">Фичи</a>
+    <a href="#changelog">Changelog</a>
+    <a href="#top">Топ</a>
+    <a href="#howto">Как зайти</a>
+    <a href="#social">Соцсети</a>
+    <a href="https://discord.gg/AkwGMA6vQJ" target="_blank" class="nav-discord">Discord</a>
+  </nav>
+  <button class="burger" id="burger" aria-label="Меню">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<nav class="nav-mobile" id="mobileNav">
+  <a href="#features" onclick="closeNav()">⚡ Фичи сервера</a>
+  <a href="#changelog" onclick="closeNav()">📋 Changelog</a>
+  <a href="#top" onclick="closeNav()">🏆 Топ игроков</a>
+  <a href="#howto" onclick="closeNav()">📖 Как зайти</a>
+  <a href="#social" onclick="closeNav()">🌐 Соцсети</a>
+  <a href="https://discord.gg/AkwGMA6vQJ" target="_blank" class="nm-discord" onclick="closeNav()">💬 Discord сервер</a>
+</nav>
+
+<section class="hero">
+  <div class="server-status" id="serverStatus">
+    <span class="status-dot loading" id="statusDot"></span>
+    <span id="statusText" class="loading">Проверка...</span>
+    <button class="refresh-btn" id="refreshBtn" title="Обновить" onclick="manualRefresh()">🔄</button>
+  </div>
+  <h1><span class="line1">OMEGA</span><span class="line2">SERVER</span></h1>
+  <p class="hero-sub">Vanilla+ сервер&nbsp;• Java + Bedrock&nbsp;•<br>Стримы на Twitch и YouTube</p>
+
+  <div class="ip-wrapper">
+    <div class="ip-card" onclick="copyIP(this,'updates-launch.gl.joinmc.link','Java IP скопирован!')">
+      <div class="ip-header">
+        <div class="ip-type">☕ Java Edition (ПК)</div>
+        <span class="ip-copy-icon">📋</span>
+      </div>
+      <div class="ip-value">updates-launch.gl.joinmc.link</div>
+      <div class="ip-copy-hint">нажми чтобы скопировать</div>
+    </div>
+    <div class="ip-card bedrock" onclick="copyIP(this,'subject-abroad.gl.at.ply.gg','Bedrock IP скопирован!')">
+      <div class="ip-header">
+        <div class="ip-type">📱 Bedrock (Телефон)</div>
+        <span class="ip-copy-icon">📋</span>
+      </div>
+      <div class="ip-value">subject-abroad.gl.at.ply.gg</div>
+      <div class="ip-copy-hint">порт: 20075 • нажми чтобы скопировать</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <a href="https://discord.gg/AkwGMA6vQJ" target="_blank" class="btn btn-discord">💬 Discord</a>
+    <a href="https://www.twitch.tv/omega_max2007" target="_blank" class="btn btn-twitch">🎮 Twitch</a>
+    <a href="https://www.youtube.com/@omega2007-j6r" target="_blank" class="btn btn-youtube">▶ YouTube</a>
+    <a href="#howto" class="btn btn-outline">📖 Как зайти</a>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat-card reveal">
+    <div class="stat-icon">⚡</div>
+    <div class="stat-value">1.21.10</div>
+    <div class="stat-label">Версия</div>
+  </div>
+  <div class="stat-card reveal" style="transition-delay:.08s" id="onlineCard" onclick="toggleTooltip(this)">
+    <div class="stat-icon">👥</div>
+    <div class="stat-online-wrap">
+      <div class="stat-value" id="playerCount">—</div>
+      <div class="stat-label">Онлайн</div>
+      <div class="players-tooltip">
+        <div class="tooltip-title">// ИГРОКИ ОНЛАЙН</div>
+        <div id="playersList"><span class="tooltip-empty">Загрузка...</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card reveal" style="transition-delay:.16s">
+    <div class="stat-icon">📱</div>
+    <div class="stat-value">Java+PE</div>
+    <div class="stat-label">Платформы</div>
+  </div>
+  <div class="stat-card reveal" style="transition-delay:.24s">
+    <div class="stat-icon">🌍</div>
+    <div class="stat-value">Ванилла+</div>
+    <div class="stat-label">Режим</div>
+  </div>
+</div>
+
+<section class="sec" id="features">
+  <h2 class="section-title reveal">ОСОБЕННОСТИ</h2>
+  <div class="section-line reveal"></div>
+  <div class="features-grid">
+    <div class="feature-card reveal" style="transition-delay:.04s"><div class="feature-icon">📱</div><div class="feature-title">КРОССПЛАТФОРМА</div><div class="feature-desc">Заходи с ПК через Java Edition или с телефона через Bedrock. Играем вместе!</div></div>
+    <div class="feature-card reveal" style="transition-delay:.08s"><div class="feature-icon">🎥</div><div class="feature-title">СТРИМЫ</div><div class="feature-desc">Стримлю на Twitch и YouTube. Попади в эфир и стань звездой сервера!</div></div>
+    <div class="feature-card reveal" style="transition-delay:.12s"><div class="feature-icon">🏠</div><div class="feature-title">КОМАНДЫ</div><div class="feature-desc">/sethome, /tpa, /spawn и многое другое для комфортной игры</div></div>
+    <div class="feature-card reveal" style="transition-delay:.16s"><div class="feature-icon">🎒</div><div class="feature-title">ЭНДЕР СУНДУК ×2</div><div class="feature-desc">Увеличенный эндер-сундук — больше места для твоих вещей</div></div>
+    <div class="feature-card reveal" style="transition-delay:.20s"><div class="feature-icon">👑</div><div class="feature-title">РАНГИ</div><div class="feature-desc">Система рангов LuckPerms с красивыми префиксами в чате</div></div>
+    <div class="feature-card reveal" style="transition-delay:.24s"><div class="feature-icon">🛡️</div><div class="feature-title">АНТИЧИТ</div><div class="feature-desc">Надёжная защита от читеров. Честная игра для всех</div></div>
+  </div>
+</section>
+
+<section class="sec narrow" id="changelog">
+  <h2 class="section-title reveal">CHANGELOG</h2>
+  <div class="section-line purple reveal"></div>
+  <div class="cl-terminal reveal">
+    <div class="cl-term-head">
+      <div class="td r"></div><div class="td y"></div><div class="td g"></div>
+      <span class="cl-title-bar">// SERVER_UPDATES.LOG</span>
+    </div>
+    <div class="cl-body" id="clBody">
+      <div class="cl-entry">
+        <div class="cl-line"></div>
+        <div>
+          <div class="cl-date">18.02.2026 <span class="cl-tag launch">LAUNCH</span></div>
+          <div class="cl-h">Запуск официального сайта</div>
+          <div class="cl-desc">Сайт OmegaServer теперь онлайн. Запущена система мониторинга статуса в реальном времени.</div>
+          <ul class="cl-list">
+            <li>Запуск сайта omegaserver</li>
+            <li>Интеграция mcstatus.io API</li>
+            <li>Авто-обновление каждые 30 секунд</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-line"></div>
+        <div>
+          <div class="cl-date">17.02.2026 <span class="cl-tag update">UPDATE</span></div>
+          <div class="cl-h">Настройка Discord-бота</div>
+          <div class="cl-desc">Создан Discord-бот который собирает статистику сервера.</div>
+          <ul class="cl-list">
+            <li>Интеграция Discord-бота</li>
+            <li>Статистика игроков</li>
+            <li>Статус сервера</li>
+            <li>Команды бота /ip /online /помощь</li>
+          </ul>
+        </div>
+      </div>
+      <span class="cl-cursor">_</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec narrow" id="top">
+  <h2 class="section-title reveal">ТОП ИГРОКОВ</h2>
+  <div class="section-line cyan reveal"></div>
+  <div class="leaderboard reveal" id="leaderboard">
+    <div class="lb-entry" style="justify-content:center;padding:28px">
+      <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(200,216,232,.25);letter-spacing:1.5px">ЗАГРУЗКА...</span>
+    </div>
+  </div>
+  <div class="lb-note reveal">* Рейтинг формируется по числу сессий на сервере. Обновляется автоматически.</div>
+</section>
+
+<section class="sec narrow" id="howto">
+  <h2 class="section-title reveal">КАК ЗАЙТИ</h2>
+  <div class="section-line reveal"></div>
+  <div class="steps">
+    <div class="step reveal" style="transition-delay:.04s">
+      <div class="step-num">01</div>
+      <div class="step-content"><h3>☕ Java Edition (ПК)</h3><p>Minecraft → Мультиплеер → Добавить сервер<br>Адрес: <code>updates-launch.gl.joinmc.link</code><br>Версия: <code>1.21.10</code></p></div>
+    </div>
+    <div class="step reveal" style="transition-delay:.08s">
+      <div class="step-num">02</div>
+      <div class="step-content"><h3>📱 Bedrock (Телефон / Xbox)</h3><p>Minecraft → Серверы → Добавить сервер<br>Адрес: <code>subject-abroad.gl.at.ply.gg</code><br>Порт: <code>20075</code></p></div>
+    </div>
+    <div class="step reveal" style="transition-delay:.12s">
+      <div class="step-num">03</div>
+      <div class="step-content"><h3>💬 Вступи в Discord</h3><p>Следи за новостями, ивентами и расписанием стримов в нашем Discord!</p></div>
+    </div>
+    <div class="step reveal" style="transition-delay:.16s">
+      <div class="step-num">04</div>
+      <div class="step-content"><h3>🎥 Попади в стрим!</h3><p>Строй, исследуй, общайся — и ты можешь оказаться в прямом эфире!</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="social">
+  <h2 class="section-title reveal">СОЦСЕТИ</h2>
+  <div class="section-line reveal"></div>
+  <div class="social-grid">
+    <a href="https://discord.gg/AkwGMA6vQJ" target="_blank" class="social-card dc reveal" style="transition-delay:.04s">
+      <span class="social-icon">💬</span><div class="social-name">DISCORD</div><div class="social-desc">Новости, анонсы стримов, ивенты и общение с игроками</div><span class="social-btn">Вступить</span>
+    </a>
+    <a href="https://www.twitch.tv/omega_max2007" target="_blank" class="social-card tw reveal" style="transition-delay:.08s">
+      <span class="social-icon">🎮</span><div class="social-name">TWITCH</div><div class="social-desc">Прямые эфиры с сервера. Смотри и участвуй вживую!</div><span class="social-btn">Смотреть</span>
+    </a>
+    <a href="https://www.youtube.com/@omega2007-j6r" target="_blank" class="social-card yt reveal" style="transition-delay:.12s">
+      <span class="social-icon">▶</span><div class="social-name">YOUTUBE</div><div class="social-desc">Видео с сервера, хайлайты стримов и эксклюзивный контент</div><span class="social-btn">Подписаться</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">OMEGASERVER</div>
+  <div class="footer-text">MINECRAFT 1.21.10 • JAVA + BEDROCK • © 2026</div>
+  <div class="footer-text">updates-launch.gl.joinmc.link</div>
+</footer>
+
+<script>
+/* БУРГЕР */
+const burger = document.getElementById('burger');
+const mobileNav = document.getElementById('mobileNav');
+burger.addEventListener('click', e => { e.stopPropagation(); burger.classList.toggle('open'); mobileNav.classList.toggle('open'); });
+document.addEventListener('click', e => { if (!mobileNav.contains(e.target) && !burger.contains(e.target)) closeNav(); });
+function closeNav() { burger.classList.remove('open'); mobileNav.classList.remove('open'); }
+
+/* ТУЛТИП */
+function toggleTooltip(card) {
+  const was = card.classList.contains('tooltip-open');
+  document.querySelectorAll('.stat-card.tooltip-open').forEach(c => c.classList.remove('tooltip-open'));
+  if (!was) card.classList.add('tooltip-open');
+}
+document.addEventListener('click', e => { if (!e.target.closest('#onlineCard')) document.querySelectorAll('.stat-card.tooltip-open').forEach(c => c.classList.remove('tooltip-open')); });
+
+/* КОПИРОВАНИЕ IP */
+function copyIP(card, text, msg) {
+  navigator.clipboard.writeText(text).catch(() => {
+    try { const e = document.createElement('textarea'); e.value = text; e.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(e); e.focus(); e.select(); document.execCommand('copy'); document.body.removeChild(e); } catch(ex) {}
+  });
+  const v = card.querySelector('.ip-value');
+  const o = v.textContent;
+  v.textContent = '✓ СКОПИРОВАНО!'; v.classList.add('copied');
+  setTimeout(() => { v.textContent = o; v.classList.remove('copied'); }, 1800);
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ЛОГИКА ТОП ИГРОКОВ (LocalStorage) */
+let lastOnlinePlayers = new Set(); // Хранит тех, кто был на сервере 30 секунд назад
+
+/* ЛОГИКА ТОР-ИГРОКОВ (LocalStorage) */
+// Функции для работы с основной статистикой
+function getLB() { try { return JSON.parse(localStorage.getItem('omega_lb') || '{}'); } catch(e) { return {}; } }
+function saveLB(d) { try { localStorage.setItem('omega_lb', JSON.stringify(d)); } catch(e) {} }
+
+// Новые функции для защиты от накрутки при обновлении страницы
+function getSessionCache() { try { return JSON.parse(localStorage.getItem('omega_session_cache') || '[]'); } catch(e) { return []; } }
+function saveSessionCache(list) { localStorage.setItem('omega_session_cache', JSON.stringify(list)); }
+
+function recordPlayers(currentPlayers) {
+  if (!currentPlayers || !currentPlayers.length) {
+    saveSessionCache([]); // Если сервер пуст, очищаем кэш сессий
+    return;
+  }
+  
+  const lb = getLB();
+  const sessionCache = getSessionCache(); // Читаем список тех, кто уже был в сети из памяти браузера
+  let changed = false;
+
+  const currentNames = currentPlayers.map(p => p.name_clean || p.name);
+
+  currentNames.forEach(name => {
+    if (!name) return;
+
+    // ПРОВЕРКА: Если имени нет в кэше сессий, значит это реально новый вход
+    if (!sessionCache.includes(name)) {
+      if (!lb[name]) lb[name] = {seen: 0, last: 0};
+      lb[name].seen++; 
+      lb[name].last = Date.now();
+      changed = true;
+    }
+  });
+
+  // Сохраняем текущий онлайн в кэш сессий (чтобы F5 не давало +1)
+  saveSessionCache(currentNames);
+
+  if (changed) {
+    saveLB(lb);
+    renderLB();
+  }
+}
+
+function renderLB() {
+  const lb = getLB();
+  const entries = Object.entries(lb).sort((a,b) => b[1].seen - a[1].seen).slice(0, 10);
+  const c = document.getElementById('leaderboard');
+  if (!entries.length) {
+    c.innerHTML = `<div class="lb-entry" style="justify-content:center;padding:28px"><span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(200,216,232,.22);letter-spacing:1.5px">// ДАННЫЕ НАКАПЛИВАЮТСЯ — ЗАГЛЯНИ ПОЗЖЕ</span></div>`;
+    return;
+  }
+  const max = entries[0][1].seen || 1;
+  const medals = ['🥇','🥈','🥉'];
+  const rcs = ['rank-1','rank-2','rank-3'];
+  c.innerHTML = entries.map(([name, d], i) => {
+    const pct = Math.round(d.seen / max * 100);
+    const dt = new Date(d.last);
+    const ls = `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}`;
+    const rh = i < 3 ? `<div class="lb-rank">${medals[i]}</div>` : `<div class="lb-rank other">#${i+1}</div>`;
+    return `<div class="lb-entry ${i<3?rcs[i]:''} reveal" style="transition-delay:${i*.05}s">
+      ${rh}
+      <div class="lb-avatar"><img src="https://mc-heads.net/avatar/${name}/32" alt="${name}" loading="lazy" onerror="this.style.display='none'"></div>
+      <div class="lb-info">
+        <div class="lb-name">${name}</div>
+        <div class="lb-seen">Последний вход: ${ls}</div>
+        <div class="lb-bar-bg"><div class="lb-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="lb-score">${d.seen}</div>
+        <div class="lb-score-lbl">СЕССИЙ</div>
+      </div>
+    </div>`;
+  }).join('');
+  c.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+}
+
+/* МОНИТОРИНГ СТАТУСА */
+const API = 'https://api.mcstatus.io/v2/status/java/updates-launch.gl.joinmc.link';
+let isChecking = false;
+
+async function updateStatus() {
+  if (isChecking) return;
+  isChecking = true;
+
+  const st = document.getElementById('statusText');
+  const dot = document.getElementById('statusDot');
+  const cnt = document.getElementById('playerCount');
+  const pl = document.getElementById('playersList');
+
+  st.style.opacity = '.6';
+  const done = () => { st.style.opacity = '1'; isChecking = false; };
+
+  try {
+    const res = await fetch(`${API}?t=${Date.now()}`);
+    const data = await res.json();
+
+    if (data.online) {
+      st.textContent = 'Сервер онлайн'; st.style.color = '#00ff88'; st.className = '';
+      dot.style.background = '#00ff88'; dot.className = 'status-dot';
+      
+      const on = data.players?.online ?? 0;
+      const mx = 50; // Твой лимит игроков
+      cnt.textContent = `${on} / ${mx}`;
+      
+      const list = data.players?.list || [];
+      recordPlayers(list); // Вызов функции с фиксом сессий
+      
+      pl.innerHTML = list.length > 0
+        ? list.map(p => `<div class="player-item"><div class="player-dot"></div>${p.name_clean||p.name}</div>`).join('')
+        : `<span class="tooltip-empty">${on > 0 ? 'Ники скрыты' : 'Никого нет онлайн'}</span>`;
+    } else {
+      st.textContent = 'Сервер офлайн'; st.style.color = '#ff4444'; st.className = 'offline';
+      dot.style.background = '#ff4444'; dot.className = 'status-dot offline';
+      cnt.textContent = '0 / 50';
+      pl.innerHTML = `<span class="tooltip-empty">Сервер офлайн</span>`;
+    }
+  } catch(_) {
+    st.textContent = 'Ошибка сети'; st.className = 'error';
+    dot.style.background = '#ffaa00'; dot.className = 'status-dot loading';
+  }
+  done();
+}
+
+function manualRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  isChecking = false;
+  updateStatus().finally(() => setTimeout(() => btn.classList.remove('spinning'), 700));
+}
+
+updateStatus();
+setInterval(updateStatus, 30000);
+
+/* АНИМАЦИИ ПРИ СКРОЛЛЕ */
+const ro = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); ro.unobserve(e.target); } });
+}, { threshold: 0.07 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+/* Появление Changelog */
+const clo = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.cl-entry').forEach((en, i) => setTimeout(() => en.classList.add('visible'), i * 180));
+      clo.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+const clb = document.getElementById('clBody');
+if (clb) clo.observe(clb);
+
+renderLB();
+</script>
+</body>
+</html>
